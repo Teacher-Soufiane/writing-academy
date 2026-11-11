@@ -300,7 +300,7 @@ function writePage() {
   h += '<label for="wbox" class="sr-only">Your text</label><textarea id="wbox" class="wbox" spellcheck="false" autocapitalize="sentences"' + (st.phase === 'write' ? '' : ' readonly') + '>' + esc(txt) + '</textarea>';
   h += '<p class="wcount ' + (inRange ? 'in' : 'out') + '" id="wcount" aria-live="polite">' + wc + ' words (' + W.min + '–' + W.max + ')</p>';
   h += '<p class="note">Your text is not saved. Use "Copy my text" before you leave the page.</p>';
-  if (st.phase === 'write') h += '<div class="actions"><button type="button" class="btn primary" data-act="donewriting"' + (inRange ? '' : ' disabled') + '>I have finished writing ▶</button><button type="button" class="btn" data-act="copy">Copy my text</button></div>';
+  if (st.phase === 'write') h += '<div class="actions"><button type="button" class="btn primary" data-act="donewriting"' + (inRange ? '' : ' disabled') + '>I have finished writing ▶</button><button type="button" class="btn" data-act="copy">Copy my text</button></div><p id="whint" class="note" style="text-align:center;font-weight:600">' + esc(wordHint(wc, W)) + '</p>';
   else {
     var answered = Object.keys(st.checks).length, all = answered === W.checklist.length;
     h += '<h2 class="section-title">Self-check: read your text and answer honestly</h2><ul class="checklist">' + W.checklist.map(function (c, i) {
@@ -391,7 +391,15 @@ function onInput(e) {
     var wc = wordCount(e.target.value), ok = wc >= W.min && wc <= W.max, c = $('#wcount'), b = $('[data-act="donewriting"]');
     if (c) { c.textContent = wc + ' words (' + W.min + '–' + W.max + ')'; c.className = 'wcount ' + (ok ? 'in' : 'out'); }
     if (b) b.disabled = !ok;
+    var hEl = $('#whint'); if (hEl) hEl.textContent = wordHint(wc, W);
   }
+}
+/* why "I have finished writing" is locked: shown under the button, updated as the student types */
+function wordHint(wc, W) {
+  var s = function (k) { return k + ' more word' + (k === 1 ? '' : 's'); };
+  if (wc < W.min) return 'Write ' + s(W.min - wc) + ' to continue (at least ' + W.min + ').';
+  if (wc > W.max) return 'Remove ' + (wc - W.max) + ' word' + (wc - W.max === 1 ? '' : 's') + ' to continue (at most ' + W.max + ').';
+  return '';
 }
 
 /* ===== init ===== */
